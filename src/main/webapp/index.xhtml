@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Todo List</title>
+</h:head>
+<h:body>
+
+    <h:form id="formCadastro">
+        <p:growl id="growl" showDetail="true" sticky="false" />
+        <p:panel header="Nova Tarefa">
+            <h:panelGrid columns="3" cellpadding="5">
+                <h:outputLabel for="descricao" value="Descrição:" />
+                <p:inputText id="descricao" value="#{todoBean.todo.descricao}" required="true" 
+                             requiredMessage="Descrição obrigatória" />
+                <p:message for="descricao" />
+
+                <h:outputLabel for="dataAlvo" value="Data Alvo:" />
+                <p:calendar id="dataAlvo" value="#{todoBean.todo.dataAlvo}" pattern="dd/MM/yyyy" 
+                            mask="true" />
+                <p:message for="dataAlvo" />
+
+                <f:facet name="footer">
+                    <p:commandButton value="Salvar" action="#{todoBean.salvar}" 
+                                     update=":formCadastro:growl :form:tabela" 
+                                     process="@this descricao dataAlvo" 
+                                     icon="ui-icon-disk" />
+                </f:facet>
+            </h:panelGrid>
+        </p:panel>
+    </h:form>
+
+    <h:form id="form">
+        <p:dataTable id="tabela" var="t" value="#{todoBean.todos}" 
+                     emptyMessage="Nenhuma tarefa cadastrada.">
+            <p:column headerText="ID">
+                <h:outputText value="#{t.id}" />
+            </p:column>
+            <p:column headerText="Descrição">
+                <h:outputText value="#{t.descricao}" />
+            </p:column>
+            <p:column headerText="Data Alvo">
+                <h:outputText value="#{t.dataAlvo}">
+                    <f:convertDateTime pattern="dd/MM/yyyy" />
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Concluído">
+                <p:selectBooleanCheckbox value="#{t.concluido}" disabled="true" />
+            </p:column>
+            <p:column headerText="Ações" style="text-align:center">
+                <p:commandButton icon="ui-icon-pencil" title="Editar" 
+                                 action="#{todoBean.editar(t)}" 
+                                 update=":form:tabela :formCadastro:growl" 
+                                 oncomplete="PF('dialogEdicao').show()" 
+                                 process="@this">
+                    <f:setPropertyActionListener target="#{todoBean.todo}" value="#{t}" />
+                </p:commandButton>
+                <p:commandButton icon="ui-icon-trash" title="Excluir" 
+                                 action="#{todoBean.excluir(t.id)}" 
+                                 update=":form:tabela :formCadastro:growl" 
+                                 process="@this">
+                    <p:confirm header="Confirmação" message="Deseja excluir esta tarefa?" 
+                               icon="ui-icon-alert" />
+                </p:commandButton>
+                <p:commandButton icon="ui-icon-check" title="Concluir/Reabrir" 
+                                 action="#{todoBean.concluir(t)}" 
+                                 update=":form:tabela :formCadastro:growl" 
+                                 process="@this" />
+            </p:column>
+        </p:dataTable>
+
+        <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+            <p:commandButton value="Sim" type="button" styleClass="ui-confirmdialog-yes" 
+                             icon="ui-icon-check" />
+            <p:commandButton value="Não" type="button" styleClass="ui-confirmdialog-no" 
+                             icon="ui-icon-close" />
+        </p:confirmDialog>
+    </h:form>
+
+    <p:dialog header="Editar Tarefa" widgetVar="dialogEdicao" modal="true" resizable="false">
+        <h:form>
+            <p:panelGrid columns="2">
+                <h:outputLabel for="editDesc" value="Descrição:" />
+                <p:inputText id="editDesc" value="#{todoBean.todo.descricao}" required="true" />
+
+                <h:outputLabel for="editData" value="Data Alvo:" />
+                <p:calendar id="editData" value="#{todoBean.todo.dataAlvo}" pattern="dd/MM/yyyy" />
+            </p:panelGrid>
+            <p:commandButton value="Salvar Alterações" action="#{todoBean.salvar}" 
+                             update=":form:tabela :formCadastro:growl" 
+                             oncomplete="PF('dialogEdicao').hide()" 
+                             process="@this editDesc editData" />
+        </h:form>
+    </p:dialog>
+
+</h:body>
+</html>
